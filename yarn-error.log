@@ -1,0 +1,51 @@
+Arguments: 
+  /Users/thanaphonjanwattanakul/.nvm/versions/node/v16.13.0/bin/node /opt/homebrew/Cellar/yarn/1.22.17_2/libexec/bin/yarn.js install
+
+PATH: 
+  /var/folders/1x/fn58d7kn5g30zqtnqbmb2nlc0000gn/T/yarn--1671794069032-0.29982251481894817:/Users/thanaphonjanwattanakul/.config/yarn/global/node_modules/.bin:/Users/thanaphonjanwattanakul/.config/yarn/link/node_modules/.bin:/Users/thanaphonjanwattanakul/.nvm/versions/node/v16.13.0/libexec/lib/node_modules/npm/bin/node-gyp-bin:/Users/thanaphonjanwattanakul/.nvm/versions/node/v16.13.0/lib/node_modules/npm/bin/node-gyp-bin:/Users/thanaphonjanwattanakul/.nvm/versions/node/v16.13.0/bin/node_modules/npm/bin/node-gyp-bin:/Users/thanaphonjanwattanakul/.nvm/versions/node/v16.13.0/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/Users/thanaphonjanwattanakul/.poetry/bin
+
+Yarn version: 
+  1.22.17
+
+Node version: 
+  16.13.0
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  Error: ENOSPC: no space left on device, copyfile '/Users/thanaphonjanwattanakul/Library/Caches/Yarn/v6/npm-react-devtools-core-4.24.0-7daa196bdc64f3626b3f54f2ff2b96f7c4fdf017-integrity/node_modules/react-devtools-core/dist/importFile.worker.worker.js' -> '/Users/thanaphonjanwattanakul/amity-react-native-test/node_modules/react-devtools-core/dist/importFile.worker.worker.js'
+
+npm manifest: 
+  {
+    "name": "amity-react-native-test",
+    "version": "1.0.0",
+    "main": "node_modules/expo/AppEntry.js",
+    "scripts": {
+      "start": "expo start",
+      "android": "expo start --android",
+      "ios": "expo start --ios",
+      "web": "expo start --web"
+    },
+    "dependencies": {
+      "expo": "~47.0.9",
+      "expo-status-bar": "~1.4.2",
+      "react": "18.1.0",
+      "react-dom": "18.1.0",
+      "react-native": "0.70.5",
+      "react-native-web": "~0.18.9"
+    },
+    "devDependencies": {
+      "@babel/core": "^7.12.9",
+      "@types/react": "~18.0.14",
+      "@types/react-native": "~0.70.6",
+      "typescript": "^4.6.3"
+    },
+    "private": true
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
