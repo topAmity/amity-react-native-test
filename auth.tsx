@@ -15,7 +15,7 @@ function AuthProvider({ children, onConnected }: IAuth) {
     console.log("response: ", response);
   };
   function login() {
-    const apiKey = "b3babb0b3a89f4341d31dc1a01091edcd70f8de7b23d697f";
+    const apiKey = ""; // Input your api key here
 
     const client = createClient(apiKey, API_REGIONS.SG);
     console.log("client: ", client);
