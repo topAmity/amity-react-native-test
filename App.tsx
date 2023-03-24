@@ -25,10 +25,10 @@ export default function App() {
   const [data, setMessage] = useState<Amity.LiveObject<Amity.Message>>();
   const [messagesData, setMessagesData] = useState<Amity.LiveCollection<Amity.Message>>();
   const [channelData, setChannelData] = useState<Amity.LiveCollection<Amity.Channel>>();
-  console.log('channelData: ', channelData);
+  // console.log('channelData: ', channelData);
   const [isConnected, setIsConnected] = useState(false)
-  const { data: channels = [], onNextPage, hasNextPage, loading, error } = channelData ?? {};
-  // const { data: messages = [], onNextPage, hasNextPage, loading, error } = messagesData ?? {};
+  // const { data: channels = [], onNextPage, hasNextPage, loading, error } = channelData ?? {};
+  const { data: messages = [], onNextPage, hasNextPage, loading, error } = messagesData ?? {};
   // console.log('messages: ', messages);
   // console.log('hasNextPage: ', hasNextPage);
   // console.log('onNextPage: ', onNextPage);
@@ -42,24 +42,43 @@ export default function App() {
   }, [messagesData]);
 
   function clickNextPage(){
-    onNextPage
+    if(onNextPage){ 
+        onNextPage()
+      }
+ 
   }
   function queryChannel() {
-    // console.log("test");
-    // const query = createQuery(getChannel, "64105b91e358ce57401a2f64");
- 
-    // runQuery(query, (result) => console.log("ts", result));
- 
+  
     liveChannels({limit:10,membership:'member',sortBy:'lastActivity'},setChannelData)
   }
+  // let unSubFunc: any;
+  const [unSubFunc, setUnSubFunc] = useState<any>()
 
   function queryLiveMessages() {
- liveMessages({ subChannelId:"633ecc6cf0293372ad0bdaa5",limit:5 }, setMessagesData)
+    // const response = liveMessages({ subChannelId:"641c81a171dfbce61605d9fd",limit:5 }, setMessagesData)
+    const response =liveMessages({ subChannelId:"641c7b580984eb566861e4e3",limit:5 }, (value)=>{
+      console.log('value: ', value);
+      
+    })
+    
+    // console.log('response: ', response);
+    setUnSubFunc(()=>response)
+    // console.log('unSubFunc1: ', unSubFunc);
 
   }
-  async function unSubLiveMessages() {
-    const unsubscribe=await liveMessages({ subChannelId:"633ecc6cf0293372ad0bdaa5" }, setMessagesData)
-    unsubscribe();
+
+   function unSubLiveMessages() {
+
+    // liveMessages({ subChannelId:"633ecbfce0c43d1cad00d65a" }, setMessagesData)
+    try {
+      unSubFunc()
+      // setMessagesData({})
+    } catch (error) {
+      console.log('error: ', error);
+      
+    }
+    
+
   }
   // useEffect(() =>  liveMessages({ subChannelId:"YOUR_CHANNEL_ID" }, setMessagesData)), [subChannelId])
  
@@ -115,7 +134,7 @@ runQuery(createVideoQuery, ({ data: file, loading }) => {
 
   // 5. create `createMessage` query by setting fileId to video file ID.
   const createMessageQuery = createQuery(createMessage, {
-    subChannelId: "634e813cd156fde68c90adff",
+    subChannelId: "641c7bced0a2aa3fe7228e60",
     dataType: 'video',
     fileId,
   });
@@ -187,9 +206,22 @@ const uploadVideo =(event: React.ChangeEvent<HTMLInputElement>)=>{
 
 const queryChatMessages=()=>{
 
-  const query = createQuery(queryMessages, { subChannelId: "633ecbfce0c43d1cad00d65a" });
+  const query = createQuery(queryMessages, { subChannelId: "641c7d758a4c5a6b256aa852" });
 
-  runQuery(query, ({ data: messages, ...options }) => console.log(messages, options));
+  runQuery(query, ({ data: messages, ...options }) => console.log('messagesss',messages));
+}
+const createTextTest =()=>{
+  console.log('createText: ', createTextTest);
+  const query = createQuery(createMessage, {
+    subChannelId: '641c7d758a4c5a6b256aa852',
+    dataType: 'text',
+    data: {
+      text: 'hello world',
+    },
+  
+  });
+  
+  runQuery(query, ({ data: message, ...options }) => console.log('text', message));
 }
   // useEffect(() => {
   //   getMessage()
@@ -207,8 +239,9 @@ const queryChatMessages=()=>{
         <button onClick={() => getImage()}>get Image</button>
         <button onClick={() => getChannelMember()}>get Channel Member</button>
         <button onClick={() => queryChatMessages()}>get Chat Messages</button>
-        <button onClick={onNextPage}>Next Page</button>
+        <button onClick={()=>clickNextPage()}>Next Page</button>
         <button onClick={unSubLiveMessages}>Unsubscribe</button>
+        <button onClick={()=>createTextTest()}>Create message</button>
         <input type="file" name="file" onChange={changeHandler} />
         <input type="file" name="file" onChange={uploadVideo} />
       </AuthProvider>
