@@ -43,9 +43,11 @@ import {
 } from "@amityco/ts-sdk";
 import AuthProvider from "./auth";
 
+
 const disposers: Amity.Unsubscriber[] = [];
 
 export default function App() {
+
   const [messages, setMessages] = useState<Amity.Message[]>();
   console.log("messages: ", messages);
   const [messagesData, setMessagesData] =
@@ -69,7 +71,7 @@ export default function App() {
   // console.log('communities: ', communities);
   console.log("messages test: ", messagesData);
 
-  useEffect(() => {}, [messagesData]);
+  useEffect(() => { }, [messagesData]);
 
   function clickNextPage() {
     if (onNextPage) {
@@ -113,35 +115,33 @@ export default function App() {
   function queryLiveMessages() {
     // const response = liveMessages({ subChannelId:"641c81a171dfbce61605d9fd",limit:5 }, setMessagesData)
     const unsubscribe = SubChannelRepository.getSubChannel(
-      "633d63d1f6f45e00d9deeab2",
+      "634e7de3568c245ae63158aa",
       ({ data: subChannel, loading, error }) => {
         console.log("subChannel: ", subChannel);
         setSubChannelData(subChannel);
       }
     );
   }
+  const [messageNext, setMessageNext] = useState()
   function queryLiveMessages2() {
     // const response = liveMessages({ subChannelId:"641c81a171dfbce61605d9fd",limit:5 }, setMessagesData)
     const unsubscribe = SubChannelRepository.getSubChannel(
       "634e7de3568c245ae63158aa",
-      ({ data: subChannel, loading, error }) => {
+      ({ data: subChannel, loading, error  }) => {
         console.log("subChannel: ", subChannel);
         setSubChannelData2(subChannel);
       }
     );
   }
+
+
   useEffect(() => {
     if (subChannelData) {
       console.log("pass this=====");
       const unsubscribe = MessageRepository.getMessages(
-        { subChannelId: "633d63d1f6f45e00d9deeab2", limit: 10 },
+        { subChannelId: "634e7de3568c245ae63158aa", limit: 10 },
         (res) => {
-          console.log("error: ", error);
-          console.log("response: ", res);
           setMessagesData(res);
-          // if(!loading){
-          //   console.log('not loading==>',messages)
-          // }
           try {
             subscribeSubChannel(subChannelData as Amity.SubChannel);
           } catch (error) {
@@ -149,7 +149,7 @@ export default function App() {
           }
         }
       );
-      setUnSubFunc(()=> unsubscribe)
+      setUnSubFunc(() => unsubscribe)
       disposersMessages.push(unsubscribe);
     }
   }, [subChannelData]);
@@ -391,11 +391,11 @@ export default function App() {
       // const community = {} as Amity.Community;
       const unsubscribe = CommunityRepository.getCommunity(targetId, (data) => {
         console.log('data community: ', data.data);
-        if(data.data){
-             subscribeTopic(
-          getCommunityTopic(data.data, SubscriptionLevels.POST),
-        
-        );
+        if (data.data) {
+          subscribeTopic(
+            getCommunityTopic(data.data, SubscriptionLevels.POST),
+
+          );
         }
         // subscribeTopic(
         //   getCommunityTopic(data.data, SubscriptionLevels.POST),
@@ -523,9 +523,10 @@ export default function App() {
   const getReplyComment = () => {
     const getCommentsParams: Amity.CommentLiveCollection = {
       referenceType: "post",
-      referenceId: "64746ec04815205ae149bdd3",
+      referenceId: "64746ec04815205ae149bdd3", // post ID
       dataTypes: { values: ["text", "image"], matchType: "any" },
-      parentId: "64aa88c3c5cb317bffda9317",
+      parentId: "64aa88c3c5cb317bffda9317",// parent comment ID
+      limit: 10
     };
 
     const unsubscribe = CommentRepository.getComments(
@@ -600,17 +601,26 @@ export default function App() {
       throw error;
     }
   };
+  const deleteSubChannelById = async () => {
+    try {
+      const hardDeltedSubChannel = await SubChannelRepository.deleteSubChannel('648aba1451df123ea0921580', true);
+      console.log('hardDeltedSubChannel:', hardDeltedSubChannel)
+    } catch (error) {
+      throw error;
+    }
+  };
   const getSubChannelData = () => {
-    SubChannelRepository.getSubChannel(
-      "648acc4dcfb9bca53e27f989",
+    SubChannelRepository.getSubChannels(
+      { channelId: "648991bb60996d0fbb7e53a9" },
       ({ data: subChannel, loading, error }) => {
         console.log("subChannel: ", subChannel);
       }
     );
   };
   const startSync = async () => {
-    const res = await Client.startUnreadSync();
-    console.log("res: ", res);
+   const res =  await Client.startUnreadSync();
+   console.log('res:', res)
+
   };
   const stopSync = async () => {
     const res = await Client.stopUnreadSyncing();
@@ -640,8 +650,9 @@ export default function App() {
     console.log("5555: ", data);
   }
 
-  const startRead = () => {
-    const res = SubChannelRepository.startReading("6463aa5894966924b8ca7640");
+  const startRead = async () => {
+    const res = await SubChannelRepository.startReading("634e7de3568c245ae63158aa");
+    console.log('res start read:', res)
   };
 
   const searchCommunity = () => {
@@ -665,8 +676,8 @@ export default function App() {
     //     console.log('data: ', data);
     //   }
     // );
-    const unsubscribe = UserRepository.searchUserByDisplayName(
-      { displayName: "J" },
+    const unsubscribe = UserRepository.getUsers(
+      { displayName: "" },
       (data) => {
         console.log("data1: ", data);
       }
@@ -679,8 +690,8 @@ export default function App() {
     //     console.log('data: ', data);
     //   }
     // );
-    const unsubscribe2 = UserRepository.searchUserByDisplayName(
-      { displayName: "Jo" },
+    const unsubscribe2 = UserRepository.getUsers(
+      { displayName: "Joh" },
       (data) => {
         console.log("data2: ", data);
       }
@@ -700,6 +711,35 @@ export default function App() {
       }
     );
   };
+  const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
+  console.log('usersObject:', usersObject)
+  const { data: userArr = [], onNextPage: onUserNextPage } = usersObject ?? {};
+  console.log('userArr:', userArr)
+
+
+  const queryAccounts = () => {
+
+    const unsubscribe = UserRepository.searchUserByDisplayName(
+      { displayName: '', limit: 5 },
+      (data) => {
+        setUsersObject(data)
+
+      }
+    );
+    return (() => unsubscribe())
+
+  };
+
+  async function createChannel() {
+    const newChannel = {
+      type: 'conversation' as Amity.ChannelType,
+      userIds: ['top', 'John'],
+    };
+
+    const { data: channel } = await ChannelRepository.createChannel(newChannel);
+    console.log('channel:', channel)
+
+  }
   return (
     <View style={styles.container}>
       <AuthProvider>
@@ -714,7 +754,7 @@ export default function App() {
         <button onClick={() => getImage()}>get Image</button>
         <button onClick={() => getChannelMember()}>get Channel Member</button>
         <button onClick={() => queryChatMessages()}>get Chat Messages</button>
-        <button onClick={() => clickNextPage()}>Next Page</button>
+        <button onClick={() => clickNextPage()}>Next Page Message</button>
         <button onClick={unSubLiveMessages}>Unsubscribe</button>
         <button onClick={unSubLiveChannels}>Unsubscribe Channel</button>
         <button onClick={() => createTextTest()}>Create message</button>
@@ -747,6 +787,10 @@ export default function App() {
         <button onClick={searchUser1}>search user1</button>
         <button onClick={searchUser2}>search user2</button>
         <button onClick={searchUser3}>search user3</button>
+        <button onClick={deleteSubChannelById}>delete subChannelId</button>
+        <button onClick={queryAccounts}>query Users</button>
+        <button onClick={onUserNextPage}>query Users next page</button>
+        <button onClick={createChannel}>Create Channel</button>
       </AuthProvider>
     </View>
   );
