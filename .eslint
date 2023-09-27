@@ -1,0 +1,44 @@
+module.exports = {
+env: {
+es2021: true, node: true,
+}, extends: [
+'plugin:@typescript-eslint/eslint-recommended'
+'plugin:@typescript-eslint/recommended',
+'plugin:@typescript-eslint/recommended-requiring-type-checking',
+'airbnb-base
+'prettier
+1, plugins: [
+'@typescript-eslint'
+1, rules: {
+'no-shadow': 'off',
+'(typescript-eslint/no-shadow': ['error'],
+'no-redeclare': 'off',
+"@typescript-eslint/no-redeclare': ['error'),
+"indent': 'off',
+'no-use-before-define': 'off',
+'@typescript-eslint/no-use-before-define': ['error'],
+'no-unused-vars': 'off',
+'import/prefer-default-export': 'off'
+'import/extensions': 'off',
+'import/no-unresolved': 'off',
+'import/no-extraneous-dependencies': ['error', { 'devDependencies': ['**/*.test.ts', '**/*.spec.ts'] 31,
+'@typescript-eslint/no-namespace': 'off'
+'no-void': ['warn', { allowAsStatement: true }1,
+'curly': ['error', 'all'l,
+'no-tabs': ('error', { 'allowIndentationTabs': true 71,
+'max-len': ['error', {
+'code': 120,
+'ignoreUrls': true,
+'ignoreComments': true,
+'ignoreTrailingComments': true,
+'ignoreStrings': true,
+'ignoreRegExpLiterals': true,
+'ignoreTemplateLiterals': true, }.
+'quotes': [
+'error'
+'single',
+{ 'avoidEscape': true, 'allowTemplateLiterals': false }
+1,
+'wrap-iife': ['error', 'inside'],
+'@typescript-eslint/indent': 'off'
+'no-mixed-operators': 'off'

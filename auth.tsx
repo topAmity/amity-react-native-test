@@ -1,10 +1,6 @@
 import {
   API_REGIONS,
-  createClient,
-  enableCache,
-  connectClient,
   Client,
-  SubChannelRepository,
 } from "@amityco/ts-sdk";
 import { useEffect, useState } from "react";
 interface IAuth {
@@ -24,7 +20,7 @@ function AuthProvider({ children, onConnected }: IAuth) {
   useEffect(() => {
     return Client.onSessionStateChange((state: Amity.SessionStates) => setSessionState(state));
   }, []);
-  console.log('client:', client)
+ 
   
   const handleConnect = async (userId: string, displayName: string) => {
 
@@ -60,12 +56,17 @@ function AuthProvider({ children, onConnected }: IAuth) {
     console.log('API_REGIONS.SG: ', API_REGIONS.SG);
     // console.log("client: ", client.token?.accessToken);
     handleConnect("top", "top");
+
     // enableCache()y
   }
 
+  function logClient(){
+    console.log('client==:', client)
+  }
   return (
     <div>
       <button onClick={login}> Login</button>
+      <button onClick={logClient}> Log Client</button>
       {children}
     </div>
   );

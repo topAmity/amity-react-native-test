@@ -54,15 +54,21 @@ export default function App() {
     useState<Amity.LiveCollection<Amity.Message>>();
   const [channelData, setChannelData] =
     useState<Amity.LiveCollection<Amity.Channel>>();
+  const [channelData2, setChannelData2] =
+    useState<Amity.LiveCollection<Amity.Channel>>();
   // console.log('channelData: ', channelData);
   const [isConnected, setIsConnected] = useState(false);
-  // const {
-  //   data: channels = [],
-  //   onNextPage,
-  //   hasNextPage,
-  //   loading,
-  //   error,
-  // } = channelData ?? {};
+  const {
+    data: channels = [],
+    onNextPage: onNextChannel,
+  } = channelData ?? {};
+  console.log('channels:', channels)
+  const {
+    data: channels2 = [],
+    onNextPage: onNextChannel2,
+  } = channelData2 ?? {};
+  console.log('channels2:', channels2)
+
   const { data: messagesArr = [], onNextPage, hasNextPage, loading, error } = messagesData ?? {};
   console.log('messagesArr: ', messagesArr);
   // console.log('messages: ', messages);
@@ -78,16 +84,47 @@ export default function App() {
       onNextPage();
     }
   }
+
+  function clickNextPageChannel() {
+    if (onNextChannel) {
+      onNextChannel();
+    }
+  }
+
+  function clickNextPageChannel2() {
+    if (onNextChannel2) {
+      onNextChannel2();
+    }
+  }
+
   function queryChannel() {
     const unsubscribe = ChannelRepository.getChannels(
       {
         sortBy: "lastActivity",
         limit: 10,
         membership: "member",
+        types: ['conversation']
       },
-      ({ data: channels, onNextPage, hasNextPage, loading, error }) => {
+      (data) => {
         if (!loading) console.log("Channels=>: ", channels);
 
+        setChannelData(data);
+        // subscribeChannel({} as Amity.Channel);
+      }
+    );
+  }
+
+  function queryChannel2() {
+    const unsubscribe = ChannelRepository.getChannels(
+      {
+        sortBy: "lastActivity",
+        limit: 10,
+        membership: "member",
+        types: ['community']
+      },
+      (data) => {
+        if (!loading) console.log("Channels=>: ", channels);
+        setChannelData2(data);
         // setSubChannels(subChannels);
         // subscribeChannel({} as Amity.Channel);
       }
@@ -116,7 +153,7 @@ export default function App() {
     // const response = liveMessages({ subChannelId:"641c81a171dfbce61605d9fd",limit:5 }, setMessagesData)
     const unsubscribe = SubChannelRepository.getSubChannel(
       "634e7de3568c245ae63158aa",
-      ({ data: subChannel, loading, error }) => {
+      ({ data: subChannel, loading, error, }) => {
         console.log("subChannel: ", subChannel);
         setSubChannelData(subChannel);
       }
@@ -127,7 +164,7 @@ export default function App() {
     // const response = liveMessages({ subChannelId:"641c81a171dfbce61605d9fd",limit:5 }, setMessagesData)
     const unsubscribe = SubChannelRepository.getSubChannel(
       "634e7de3568c245ae63158aa",
-      ({ data: subChannel, loading, error  }) => {
+      ({ data: subChannel, loading, error }) => {
         console.log("subChannel: ", subChannel);
         setSubChannelData2(subChannel);
       }
@@ -139,7 +176,7 @@ export default function App() {
     if (subChannelData) {
       console.log("pass this=====");
       const unsubscribe = MessageRepository.getMessages(
-        { subChannelId: "634e7de3568c245ae63158aa", limit: 10 },
+        { subChannelId: "634e7de3568c245ae63158aa", limit: 10, includeDeleted: true },
         (res) => {
           setMessagesData(res);
           try {
@@ -293,7 +330,7 @@ export default function App() {
       }
     );
   };
-  const uploadVideo = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files) {
       return;
     }
@@ -301,14 +338,41 @@ export default function App() {
     const data = new FormData();
     data.append("files", event.target.files[0]);
 
-    const query = createQuery(
-      createVideo,
+    const { data: file } = await FileRepository.uploadImage(
       data,
-      ContentFeedType.POST,
-      (percent) => console.log("UploadProgress %: ", percent)
-    );
+      (percent) => {
+        console.log('percent:', percent)
 
-    runQuery(query, ({ data }) => console.log("test message", data));
+      }
+    );
+    console.log('file:', file)
+
+  };
+  const createVideoMessage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) {
+      return;
+    }
+
+    const data = new FormData();
+    data.append("files", event.target.files[0]);
+
+    const { data: file } = await FileRepository.uploadVideo(
+      data, 'message',(percent)=> console.log(percent)
+    );
+    console.log('file:', file)
+    const { fileId } = file[0];
+    if (fileId) {
+      const videoMessage = {
+        subChannelId: '65117b4707c4195c355d4b6e',
+        dataType: MessageContentType.VIDEO,
+        fileId,
+      };
+      // 3. run create message query
+      const { data: message } = await MessageRepository.createMessage(videoMessage);
+      console.log('message:', message)
+    }
+
+
   };
 
   const queryChatMessages = () => {
@@ -490,58 +554,84 @@ export default function App() {
   const getCommentData = () => {
     const getCommentsParams: Amity.CommentLiveCollection = {
       referenceType: "post",
-      referenceId: "64746ec04815205ae149bdd3",
+      referenceId: "650ff88af803fa63ebc215bc",
       dataTypes: { values: ["text", "image"], matchType: "any" },
+      limit: 20
     };
 
     let addedComment = false;
     const unsubscribe = CommentRepository.getComments(
       getCommentsParams,
-      (info) => {
-        console.log("info: ", info);
-        console.log(
-          "received data, comment ids: ",
-          info.data.map((c) => c.commentId)
-        );
-        setNextPageFunc(() => info.onNextPage);
+      (data) => {
+        console.log("info comment: 555 ", data);
+        // console.log(
+        //   "received data, comment ids: ",
+        //   info.data.map((c) => c.commentId)
+        // );
+        // setNextPageFunc(() => info.onNextPage);
+        // add a reply to the first comment
+        subscribeCommentTopic('64d158f6000d6e1d90062de1', 'community');
+      }
+    );
+  };
+  const getCommentByID = () => {
+
+    let addedComment = false;
+    const unsubscribe = CommentRepository.getComment(
+      '64b67d09ee61d8414260dfc6',
+
+      ({ data: comment }) => {
+        console.log('comment:', comment)
+
         // add a reply to the first comment
         // subscribeCommentTopic('a1728810d2b7cbffcc4977121594e20f', 'community');
       }
     );
   };
+
   const reactionQuery = () => {
     const unsub = ReactionRepository.getReactions(
       {
         referenceType: "comment",
-        referenceId: "621E0333-F1FB-4090-B19D-141629EBA3FA",
+        referenceId: "64b67d09ee61d8414260dfc6",// your commentID
       },
       ({ data: reactions }) => console.log(reactions)
     );
 
-    unsub();
+
   };
+  const [commentCollection, setCommentCollection] =
+    useState<Amity.LiveCollection<Amity.Comment<any>>>();
+
+  const { data: comments, onNextPage: OnNextComment } = commentCollection ?? {};
   const getReplyComment = () => {
     const getCommentsParams: Amity.CommentLiveCollection = {
       referenceType: "post",
-      referenceId: "64746ec04815205ae149bdd3", // post ID
+      referenceId: "650ff88af803fa63ebc215bc", // post ID
       dataTypes: { values: ["text", "image"], matchType: "any" },
-      parentId: "64aa88c3c5cb317bffda9317",// parent comment ID
+      parentId: "53DC30FA-308E-40C4-988B-8EBAD976A673",// parent comment ID
       limit: 10
     };
 
     const unsubscribe = CommentRepository.getComments(
       getCommentsParams,
       (info) => {
+        setCommentCollection(info)
         console.log("info=>: ", info);
       }
     );
   };
+
+  const nextCommentPage = () => {
+    OnNextComment && OnNextComment()
+  }
   const addReplyComment = () => {
     const referenceType: Amity.CommentReferenceType = "post";
     const newCommentParams = {
-      data: { text: "top kub" },
+      data: { text: "top kub 2" },
       referenceId: "64746ec04815205ae149bdd3",
       referenceType,
+      parentId: '64e729cacd40dc29db44e404'
     };
     CommentRepository.createComment(newCommentParams);
   };
@@ -553,17 +643,15 @@ export default function App() {
   };
   const getReplyCommentData = async () => {
     const comments = await CommentRepository.getCommentByIds([
-      "268555AC-D29D-4B0A-90E9-EAADA044F009",
-      "44D6629E-565D-4E04-A8D5-20ED0FA7DAFF",
-      "12E73624-3F74-4755-BC7F-43DC7C470F5C",
+      '64b67d09ee61d8414260dfc6'
     ]);
     console.log("comments: ", comments);
   };
-  async function addPostReaction() {
+  async function addCommentReaction() {
     const isPostReactionAdded = await ReactionRepository.addReaction(
-      "post",
-      "64746ec04815205ae149bdd3",
-      "like"
+      "comment",
+      "64b67d09ee61d8414260dfc6",
+      "sad"
     );
     console.log("isPostReactionAdded: ", isPostReactionAdded);
 
@@ -618,8 +706,8 @@ export default function App() {
     );
   };
   const startSync = async () => {
-   const res =  await Client.startUnreadSync();
-   console.log('res:', res)
+    const res = await Client.startUnreadSync();
+    console.log('res:', res)
 
   };
   const stopSync = async () => {
@@ -712,15 +800,14 @@ export default function App() {
     );
   };
   const [usersObject, setUsersObject] = useState<Amity.LiveCollection<Amity.User>>();
-  console.log('usersObject:', usersObject)
   const { data: userArr = [], onNextPage: onUserNextPage } = usersObject ?? {};
   console.log('userArr:', userArr)
 
 
   const queryAccounts = () => {
 
-    const unsubscribe = UserRepository.searchUserByDisplayName(
-      { displayName: '', limit: 5 },
+    const unsubscribe = UserRepository.getUsers(
+      { displayName: '' },
       (data) => {
         setUsersObject(data)
 
@@ -729,7 +816,9 @@ export default function App() {
     return (() => unsubscribe())
 
   };
-
+  const handleUserNextPage = () => {
+    if (onUserNextPage) onUserNextPage()
+  }
   async function createChannel() {
     const newChannel = {
       type: 'conversation' as Amity.ChannelType,
@@ -740,10 +829,23 @@ export default function App() {
     console.log('channel:', channel)
 
   }
+
+  async function addMessageReaction() {
+    const isMessageReactionAdded = await ReactionRepository.addReaction(
+      'message',
+      '64dcb4e32fc55424ef7107c2',
+      'like',
+    );
+
+    console.log('isMessageReactionAdded:', isMessageReactionAdded)
+  }
   return (
     <View style={styles.container}>
       <AuthProvider>
         <button onClick={() => queryChannel()}>test liveChannels</button>
+        <button onClick={() => queryChannel2()}>test liveChannels 2</button>
+        <button onClick={() => clickNextPageChannel()}>test Channel Next</button>
+        <button onClick={() => clickNextPageChannel2()}>test Channel Next 2</button>
         <button onClick={() => queryLiveMessages()}>test liveMessages</button>
         <button onClick={() => queryLiveMessages2()}>test liveMessages2</button>
         <button onClick={() => queryChannelsByMember()}>
@@ -761,16 +863,18 @@ export default function App() {
         <button onClick={() => getFileDetail()}>get File</button>
         <button onClick={() => getUserList()}> get users</button>
         <button onClick={() => queryGlobalFeed()}> Query Global feed</button>
-        <input type="file" name="file" onChange={changeHandler} />
-        <input type="file" name="file" onChange={uploadVideo} />
-        <input type="file" name="file image" onChange={changeHandler2} />
+        {/* <input type="file" name="file" onChange={changeHandler} /> */}
+        <input type="file" name="file" title="upload image" onChange={uploadImage} />
+        {/* <input type="file" name="file image" onChange={changeHandler2} /> */}
         <button onClick={getPosts}>Get Post Community</button>
         <button onClick={getPost}>Get a Post </button>
         <button onClick={nextPostCommunity}>nextPostCommunity</button>
         <button onClick={onRefresh}>onRefresh</button>
         <button onClick={getCommentData}>get comment</button>
+        <button onClick={getCommentByID}>get comment By ID</button>
         <button onClick={getReplyComment}>get reply comment</button>
-        <button onClick={getReplyCommentData}>get Reply comment</button>
+        <button onClick={nextCommentPage}> next comment</button>
+        <button onClick={getReplyCommentData}>get Reply comment By IDs</button>
         <button onClick={addReplyComment}>Add Reply comment</button>
         <button onClick={nextPageComment}>next page comment</button>
         <button onClick={deletePostById}>Delete post</button>
@@ -778,7 +882,7 @@ export default function App() {
         <button onClick={stopSync}>Stop Sync</button>
         <button onClick={createSubChannel}>create sub channel</button>
         <button onClick={getSubChannelData}>get sub channel</button>
-        <button onClick={addPostReaction}>Add reaction</button>
+        <button onClick={addCommentReaction}>Add comment reaction</button>
         <button onClick={reactionQuery}>Query reaction</button>
         <button onClick={checkSessionState}>Check Session State</button>
         <button onClick={getVideoImageThumbnail}>thumbnail</button>
@@ -789,8 +893,11 @@ export default function App() {
         <button onClick={searchUser3}>search user3</button>
         <button onClick={deleteSubChannelById}>delete subChannelId</button>
         <button onClick={queryAccounts}>query Users</button>
-        <button onClick={onUserNextPage}>query Users next page</button>
+        <button onClick={handleUserNextPage}>query Users next page</button>
         <button onClick={createChannel}>Create Channel</button>
+        <button onClick={addMessageReaction}>Add message reaction</button>
+        <p>Create video message</p>
+        <input type="file" name="file" title="Create video message" onChange={createVideoMessage} />
       </AuthProvider>
     </View>
   );
